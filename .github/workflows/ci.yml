@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    name: ${{ matrix.compiler }}
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install GNUstep (Debian's packages, built with GCC)
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends gnustep-devel gnustep-make \
+            libgnustep-gui-dev gnustep-gui-runtime gobjc clang xvfb xauth
+      - name: Build
+        run: |
+          . /usr/share/GNUstep/Makefiles/GNUstep.sh
+          if [ "${{ matrix.compiler }}" = clang ]; then
+            make CC=clang OBJC=clang messages=yes
+            make -C Examples/ComboDemo CC=clang OBJC=clang messages=yes
+          else
+            make messages=yes
+            make -C Examples/ComboDemo messages=yes
+          fi
+      - name: Tests
+        run: |
+          . /usr/share/GNUstep/Makefiles/GNUstep.sh
+          if [ "${{ matrix.compiler }}" = clang ]; then
+            xvfb-run -a make check CC=clang OBJC=clang
+          else
+            xvfb-run -a make check
+          fi
+      - name: Test log
+        if: always()
+        run: cat Tests/tests.log 2>/dev/null | tail -100 || true

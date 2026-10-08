@@ -1,0 +1,11 @@
+obj/
+*.d
+derived_src/
+Tests/tests.log
+Tests/tests.sum
+Tests/oldtests.*
+Tests/gui/*/obj/
+Tests/gui/*/GNUmakefile
+Examples/*/obj/
+*.app/
+*.o

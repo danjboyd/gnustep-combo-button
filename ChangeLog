@@ -1,0 +1,17 @@
+2026-10-08  Daniel Boyd  <danieljboyd@icloud.com>
+
+	* Headers/AppKit/NSComboButton.h: New file: Apple's NSComboButton
+	(macOS 13), declared unless GS_HAS_COMBO_BUTTON is defined.
+	* Headers/GSComboButton.h: New file: GSComboButtonPart, the GSTheme
+	methods that draw a combo button, GSComboButtonInstall().
+	* Source/NSComboButton.m: New file: the class.  Split and unified
+	styles, the menu shown below the button (above when there's no room)
+	and tracked as a context menu, the menu's delegate updated once,
+	NSCoding.
+	* Source/GSComboButtonTheme.m: New file: GSTheme's default drawing.
+	* Source/GSComboButtonInstall.m: New file: GSComboButtonInstall().
+	* Source/GSComboButtonPrivate.h: New file.
+	* GSComboButton.make, GNUmakefile: New files.
+	* Tests/gui/NSComboButton/combo.m: New file.
+	* Examples/ComboDemo: New example.
+	* .github/workflows/ci.yml: New file: GCC and clang builds and tests.
