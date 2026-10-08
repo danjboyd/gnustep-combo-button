@@ -24,8 +24,11 @@ jobs:
         run: |
           . /usr/share/GNUstep/Makefiles/GNUstep.sh
           if [ "${{ matrix.compiler }}" = clang ]; then
-            make CC=clang OBJC=clang messages=yes
-            make -C Examples/ComboDemo CC=clang OBJC=clang messages=yes
+            # Debian's GNUstep is built for GCC's runtime, whose headers
+            # (objc/objc.h) are in GCC's include directory.
+            GCCINC=$(gcc -print-file-name=include)
+            make CC=clang OBJC=clang ADDITIONAL_CPPFLAGS="-I$GCCINC" messages=yes
+            make -C Examples/ComboDemo CC=clang OBJC=clang ADDITIONAL_CPPFLAGS="-I$GCCINC" messages=yes
           else
             make messages=yes
             make -C Examples/ComboDemo messages=yes
@@ -34,7 +37,7 @@ jobs:
         run: |
           . /usr/share/GNUstep/Makefiles/GNUstep.sh
           if [ "${{ matrix.compiler }}" = clang ]; then
-            xvfb-run -a make check CC=clang OBJC=clang
+            xvfb-run -a make check CC=clang OBJC=clang ADDITIONAL_CPPFLAGS="-I$(gcc -print-file-name=include)"
           else
             xvfb-run -a make check
           fi
