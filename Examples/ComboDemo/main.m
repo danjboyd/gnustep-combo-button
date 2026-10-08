@@ -26,6 +26,9 @@
   NSMenu *menu = AUTORELEASE([[NSMenu alloc] initWithTitle: @"Recent"]);
 
   [menu setDelegate: (id)self];
+  /* Filled now as well as before each showing: as AppKit's, an empty menu
+     disables the arrow. */
+  [self menuNeedsUpdate: menu];
   return menu;
 }
 

@@ -63,6 +63,11 @@ As AppKit's:
   there's no room below. It is tracked as a context menu is: released over an
   item chooses it; released elsewhere, the menu stays open for a click.
 - Before the menu shows, its delegate gets `-menuNeedsUpdate:` once.
+- As AppKit's header documents: with no menu items the arrow part is disabled
+  (so a menu filled only in `-menuNeedsUpdate:` must have items before it can
+  open, as on macOS); a split button with no action has its title part
+  disabled; a unified button with no action shows its menu on the press; and
+  the button has no context menu (`-menuForEvent:` returns nil).
 - `intrinsicContentSize`, `fittingSize` and `-sizeToFit`: a rounded push
   button's size for the title and image, in the theme's font and margins,
   plus the arrow.

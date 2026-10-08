@@ -305,7 +305,7 @@ GSComboButtonMenuOrigin(NSRect buttonRect, NSSize size, NSRect visible)
                         state: state];
   if (_enabled && _style == NSComboButtonStyleSplit)
     {
-      if (_mainHighlighted)
+      if (_mainHighlighted && [self _isMainPartEnabled])
         {
           [theme drawComboButtonBezel: self
                                 frame: bounds
@@ -354,10 +354,17 @@ GSComboButtonMenuOrigin(NSRect buttonRect, NSSize size, NSRect visible)
                                                     NSHeight(bounds))
                                   state: state];
         }
-      [theme drawComboButtonArrow: self
-                            frame: arrowRect
-                            state: (_enabled && _menuShown
-                                    ? GSThemeHighlightedState : state)];
+      GSThemeControlState arrowState = state;
+
+      if ([self _isMenuPartEnabled] == NO)
+        {
+          arrowState = GSThemeDisabledState;
+        }
+      else if (_menuShown)
+        {
+          arrowState = GSThemeHighlightedState;
+        }
+      [theme drawComboButtonArrow: self frame: arrowRect state: arrowState];
     }
 
   if (_enabled && [[self window] firstResponder] == self
@@ -392,13 +399,27 @@ GSComboButtonMenuOrigin(NSRect buttonRect, NSSize size, NSRect visible)
   if (_style == NSComboButtonStyleSplit
       && [self _partAtPoint: point] == GSComboButtonArrowPart)
     {
-      [self _showMenuForEvent: event];
+      if ([self _isMenuPartEnabled])
+        {
+          [self _showMenuForEvent: event];
+        }
     }
   else if (_style == NSComboButtonStyleUnified)
     {
-      [self _trackUnifiedPress: event];
+      if (_action == NULL)
+        {
+          /* As AppKit's: with no action, the menu shows on the press. */
+          if ([self _isMenuPartEnabled])
+            {
+              [self _showMenuForEvent: event];
+            }
+        }
+      else
+        {
+          [self _trackUnifiedPress: event];
+        }
     }
-  else
+  else if ([self _isMainPartEnabled])
     {
       [self _trackMainPress: event];
     }
@@ -418,7 +439,7 @@ GSComboButtonMenuOrigin(NSRect buttonRect, NSSize size, NSRect visible)
 
 - (void) performClick: (id)sender
 {
-  if (_enabled == NO)
+  if ([self _isMainPartEnabled] == NO || _action == NULL)
     {
       return;
     }
@@ -426,6 +447,13 @@ GSComboButtonMenuOrigin(NSRect buttonRect, NSSize size, NSRect visible)
   [self _setMainHighlighted: YES];
   [self _setMainHighlighted: NO];
   [self sendAction: _action to: _target];
+}
+
+
+/* As AppKit's, the button has no context menu: its menu is the arrow's. */
+- (NSMenu *) menuForEvent: (NSEvent *)event
+{
+  return nil;
 }
 
 
@@ -563,6 +591,18 @@ GSComboButtonMenuOrigin(NSRect buttonRect, NSSize size, NSRect visible)
 
 @implementation NSComboButton (GSComboButtonPrivate)
 
+/* As AppKit's: a split button's title part is disabled without an
+   action, and the arrow part without menu items. */
+- (BOOL) _isMainPartEnabled
+{
+  return _enabled && (_style == NSComboButtonStyleUnified || _action != NULL);
+}
+
+- (BOOL) _isMenuPartEnabled
+{
+  return _enabled && [[self menu] numberOfItems] > 0;
+}
+
 + (BOOL) _isGSComboButton
 {
   return YES;
@@ -595,7 +635,7 @@ GSComboButtonMenuOrigin(NSRect buttonRect, NSSize size, NSRect visible)
   [_labelCell setImagePosition: position];
   [_labelCell setImageScaling: _imageScaling];
   [_labelCell setFont: [self font]];
-  [_labelCell setEnabled: _enabled];
+  [_labelCell setEnabled: [self _isMainPartEnabled]];
   [_labelCell setHighlighted: _mainHighlighted];
   return _labelCell;
 }
@@ -736,7 +776,7 @@ GSComboButtonMenuOrigin(NSRect buttonRect, NSSize size, NSRect visible)
   NSDate *until;
   BOOL inside = YES;
 
-  until = ([self menu] != nil
+  until = ([self _isMenuPartEnabled]
            ? [NSDate dateWithTimeIntervalSinceNow: GSComboButtonHoldDelay]
            : [NSDate distantFuture]);
   [self _setMainHighlighted: YES];
@@ -763,7 +803,7 @@ GSComboButtonMenuOrigin(NSRect buttonRect, NSSize size, NSRect visible)
         {
           break;
         }
-      if ([self menu] != nil
+      if ([self _isMenuPartEnabled]
           && hypot(location.x - start.x, location.y - start.y)
              >= GSComboButtonDragDistance)
         {

@@ -52,6 +52,8 @@
 
 /* Whether the main part is drawn pressed, and whether the menu is
    showing (the arrow part drawn pressed). */
+- (BOOL) _isMainPartEnabled;
+- (BOOL) _isMenuPartEnabled;
 - (BOOL) _isMainHighlighted;
 - (BOOL) _isMenuShown;
 - (void) _setMainHighlighted: (BOOL)flag;

@@ -1,5 +1,17 @@
 2026-10-08  Daniel Boyd  <danieljboyd@icloud.com>
 
+	* Source/NSComboButton.m: As AppKit's: the arrow part is disabled
+	without menu items, a split button's title part without an action;
+	a unified button without an action shows its menu on the press;
+	-menuForEvent: returns nil (no context menu).
+	* Source/GSComboButtonPrivate.h: -_isMainPartEnabled,
+	-_isMenuPartEnabled.
+	* Tests/gui/NSComboButton/combo.m: Test them.
+	* Examples/ComboDemo/main.m: Fill the menus up front.
+	* README.md: Document them.
+
+2026-10-08  Daniel Boyd  <danieljboyd@icloud.com>
+
 	* Headers/AppKit/NSComboButton.h: New file: Apple's NSComboButton
 	(macOS 13), declared unless GS_HAS_COMBO_BUTTON is defined.
 	* Headers/GSComboButton.h: New file: GSComboButtonPart, the GSTheme

@@ -282,6 +282,36 @@ main (int argc, char **argv)
         [button setEnabled: YES];
       }
 
+      /* As AppKit's: the arrow part needs menu items, a split button's
+         title part an action; a unified button without an action shows its
+         menu on the press; and the button has no context menu. */
+      {
+        NSComboButton *b = [NSComboButton comboButtonWithTitle: @"T"
+                                                          menu: AUTORELEASE([[NSMenu alloc] initWithTitle: @"Empty"])
+                                                        target: counter
+                                                        action: @selector(act:)];
+        int before = counter->actions;
+
+        PASS ([b _isMainPartEnabled] && [b _isMenuPartEnabled] == NO,
+              "an empty menu disables the arrow part only");
+        [b setMenu: threeItemMenu ()];
+        PASS ([b _isMenuPartEnabled], "items enable it");
+        [b setAction: NULL];
+        PASS ([b _isMainPartEnabled] == NO && [[b _labelCell] isEnabled] == NO,
+              "split, without an action: the title part is disabled, and drawn so");
+        [b performClick: nil];
+        PASS (counter->actions == before, "and -performClick: does nothing");
+        [b setStyle: NSComboButtonStyleUnified];
+        PASS ([b _isMainPartEnabled],
+              "unified, without an action: one part, which shows the menu");
+        PASS ([b menuForEvent: mouseEvent (NSRightMouseDown, NSMakePoint (5, 5), nil)] == nil
+              && [b menu] != nil,
+              "no context menu, though it has a menu");
+        [b setEnabled: NO];
+        PASS ([b _isMainPartEnabled] == NO && [b _isMenuPartEnabled] == NO,
+              "disabled, neither part");
+      }
+
       /* The menu: its delegate fills it once each time it shows. */
       [menu setDelegate: (id)counter];
       {
